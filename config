@@ -1,0 +1,27 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  kubeProxyMode: "ipvs"
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: ./kind-pvc-hostpath.yaml
+    containerPath: /kind/manifests/default-storage.yaml
+  - hostPath: /tmp/hostpath-provisioner
+    containerPath: /tmp/hostpath-provisioner
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "my-label3=true"
+- role: worker
+  extraMounts:
+  - hostPath: /tmp/hostpath-provisioner
+    containerPath: /tmp/hostpath-provisioner
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "my-label2=true"
