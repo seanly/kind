@@ -1,9 +1,11 @@
+# vim: ft=yaml 
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   kubeProxyMode: "ipvs"
 nodes:
 - role: control-plane
+  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.21.1
   extraMounts:
   - hostPath: ./kind-pvc-hostpath.yaml
     containerPath: /kind/manifests/default-storage.yaml
@@ -11,11 +13,19 @@ nodes:
     containerPath: /tmp/hostpath-provisioner
   kubeadmConfigPatches:
   - |
-    kind: JoinConfiguration
+    kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
-        node-labels: "my-label3=true"
+        node-labels: "my-label3=true,ingress-ready=true"
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
 - role: worker
+  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.21.1
   extraMounts:
   - hostPath: /tmp/hostpath-provisioner
     containerPath: /tmp/hostpath-provisioner
