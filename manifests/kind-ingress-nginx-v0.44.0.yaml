@@ -36,6 +36,24 @@ metadata:
   name: ingress-nginx-controller
   namespace: ingress-nginx
 data:
+  proxy-body-size: 20m
+  proxy-connect-timeout: "10"
+  max-worker-connections: "65536"
+  enable-underscores-in-headers: "true"
+  reuse-port: "true"
+  worker-cpu-affinity: "auto"
+  server-tokens: "false"
+  ssl-redirect: "false"
+  allow-backend-server-header: "true"
+  ignore-invalid-headers: "true"
+  generate-request-id: "true"
+  forwarded-for-header: "X-Real-IP"
+  #compute-full-forwarded-for: "true"
+  #hsts: "false"
+  #enable-vts-status: "true"
+  #use-proxy-protocol: "true"
+  #upstream-max-fails: "2"
+  #upstream-fail-timeout: "10"
 ---
 # Source: ingress-nginx/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
