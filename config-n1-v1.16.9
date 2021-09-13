@@ -5,8 +5,10 @@ networking:
   kubeProxyMode: "ipvs"
 nodes:
 - role: control-plane
-  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.21.1
+  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.16.9
   extraMounts:
+  - hostPath: ./etc/localtime
+    containerPath: /etc/localtime
   - hostPath: ./manifests/kind-pvc-hostpath.yaml
     containerPath: /kind/manifests/default-storage.yaml
   - hostPath: /tmp/hostpath-provisioner
@@ -24,14 +26,3 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
-- role: worker
-  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.21.1
-  extraMounts:
-  - hostPath: /tmp/hostpath-provisioner
-    containerPath: /tmp/hostpath-provisioner
-  kubeadmConfigPatches:
-  - |
-    kind: JoinConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "my-label2=true"
