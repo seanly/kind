@@ -12,10 +12,13 @@ docker-build:
     - |
       sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk update
       apk add docker-compose
+
       cd ./dockerfiles/
+
       cat > .env <<EOF
       CI_REGISTRY_IMAGE:${CI_REGISTRY_IMAGE}
       EOF
+
       docker-compose build
       docker-compose push 
 
