@@ -1,0 +1,40 @@
+
+pipeline {
+    agent any
+
+    options {    
+        disableConcurrentBuilds()
+        skipDefaultCheckout true
+    }
+
+    stages {
+
+        stage("Checkout Code") {
+            steps {
+                script {
+                    deleteDir()
+                    cleanWs()
+                    def branch = purgeBranchString(coderepo.branch)
+                    git branch: "${branch}", credentialsId: "${coderepo.auth}", url: "${coderepo.url}"
+                }
+            }
+        }
+
+        stage('Build') {
+            
+            environment { 
+                DOCKER_AUTH = credentials("${dockerpush.auth}")
+                DOCKER_REG = "${dockerpush.registry}"
+            }
+
+            steps {
+                script {
+                    def toolimg = docker.image("${DOCKER_REG}/oes-workspace/kind/maven:3-openjdk-17")
+                    toolimg.inside {
+                        sh "mvn -B -e -U clean package -Dmaven.test.skip=true"
+                    }
+                }
+            }
+        }
+    }
+}
