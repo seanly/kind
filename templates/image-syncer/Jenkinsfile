@@ -1,0 +1,97 @@
+pipeline {
+    agent any
+
+    options {    
+        disableConcurrentBuilds()
+        skipDefaultCheckout true
+    }
+
+    stages {
+
+        stage("Checkout Code") {
+            steps {
+                script {
+                    deleteDir()
+                    cleanWs()
+                    def branch = purgeBranchString(coderepo.branch)
+                    git branch: "${branch}", credentialsId: "${coderepo.auth}", url: "${coderepo.url}"
+                }
+            }
+        }
+
+        stage("Image Sync") {
+            
+            environment { 
+                DOCKER_AUTH = credentials("${dockerpush.auth}")
+                DOCKER_REG = "${dockerpush.registry}"
+            }
+
+            steps {
+                script {
+
+                    def images_json = '''
+                    {
+                        {%- for image in images %}
+                            {% if loop.last %}
+                            "{{ image.src }}": "{{ registry }}/{{ namespace }}/{{ image.dest }}"
+                            {% else %}
+                            "{{ image.src }}": "{{ registry }}/{{ namespace }}/{{ image.dest }}",
+                            {% endif %}
+                        {%- endfor %}
+                    }
+                    '''                    
+                    
+                    def auth_json = '''
+                    {               
+                        "{{ registry }}": {
+                            "username": "{{ username }}",
+                            "password": "{{ password }}"
+                        }
+                    }
+                    '''
+
+                    def dockerfile = '''
+                    FROM registry.cn-chengdu.aliyuncs.com/k8ops/rockylinux:8.5
+
+                    RUN yum install -y python3 && pip3 install jinja2-cli[yaml]
+
+                    RUN curl -o /tmp/1.tar.gz -L https://gh.api.99988866.xyz/https://github.com/AliyunContainerService/image-syncer/releases/download/v1.3.1/image-syncer-v1.3.1-linux-amd64.tar.gz && \
+                    tar -x -f /tmp/1.tar.gz -C /usr/bin/ && rm -rf /tmp/*.tar.gz
+                    '''
+
+                    writeFile(file: 'images.j2', text: images_json)
+                    writeFile(file: 'auth.j2', text: auth_json)
+                    writeFile(file: 'Dockerfile', text: dockerfile)
+
+                    def toolimg = docker.build("tool:snapshot")
+                    toolimg.inside {
+                        sh """
+                        set -eux
+                        jinja2 -D registry=${DOCKER_REG} \
+                            -D username=${DOCKER_AUTH_USR} \
+                            -D password=${DOCKER_AUTH_PSW} auth.j2 > auth.json
+                        jinja2 ./images.j2 ${coderepo.filepath} > images.json
+
+                        image-syncer --auth ./auth.json --images ./images.json -p 20
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
+
+def purgeBranchString(branch) {
+
+    def gitBranch = branch
+
+    if (gitBranch?.startsWith("refs/heads/")) {
+        gitBranch = gitBranch.replace("refs/heads/", "")
+    }
+
+    if (gitBranch?.startsWith("refs/tags/")) {
+        gitBranch = gitBranch.replace("refs/tags/", "")
+    }
+
+    return gitBranch
+}
