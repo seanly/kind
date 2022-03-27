@@ -3,6 +3,8 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   kubeProxyMode: "ipvs"
+  apiServerAddress: "172.24.233.221" # 获取主机地址，填入这里
+  apiServerPort: 58350               # 填写映射端口，用于访问
 nodes:
 - role: control-plane
   image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.19.7
