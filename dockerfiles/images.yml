@@ -1,5 +1,0 @@
-registry: registry.cn-chengdu.aliyuncs.com
-namespace: k8ops
-images:
-  - maven:3-openjdk-17
-  - openjdk:17-jdk-oraclelinux8
