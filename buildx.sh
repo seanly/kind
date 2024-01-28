@@ -20,6 +20,7 @@ function docker_buildx_svc() {
   _context=$(docker-compose config |yq ".services|to_entries|.[]| select(.key==\"${_svc}\")|.value.build.context")
 
   _build_args=$(docker-compose config |yq ".services|to_entries|.[]| select(.key==\"${_svc}\")|.value.build.args")
+  _build_target=$(docker-compose config |yq ".services|to_entries|.[]| select(.key==\"${_svc}\")|.value.build.target")
   IFS=$'\n'
   _buildx_build_args=
   if [ "x${_build_args}" != "xnull" ]; then
@@ -29,9 +30,14 @@ function docker_buildx_svc() {
       _buildx_build_args="${_buildx_build_args} --build-arg ${_arg_str}"
     done
   fi
+
+  if [ "x${_build_target}" != "xnull" ]; then
+    _buildx_build_args="--target ${_build_target}"
+  fi
+
   IFS=' ' read -ra _buildx_build_args_arr <<< "$_buildx_build_args"
 
-  docker buildx build --platform linux/amd64,linux/arm64 -t ${_image} ${_context} --push --pull --progress=plain ${_buildx_build_args_arr[@]}
+  docker buildx build --platform linux/amd64,linux/arm64 -t ${_image} ${_context} --push --pull --progress=plain ${_buildx_build_args_arr[@]} ${_build_opts}
 }
 
 if [ -n "$_svc_name" ]; then

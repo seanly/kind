@@ -8,7 +8,7 @@ networking:
 
 nodes:
 - role: control-plane
-  image: seanly/kind:node-v1.21.14
+  image: seanly/kind:node-v1.26.6
   extraMounts:
   - hostPath: ./manifests/kind-pvc-hostpath.yaml
     containerPath: /kind/manifests/default-storage.yaml
@@ -29,7 +29,7 @@ nodes:
     protocol: TCP
 
 - role: worker
-  image: seanly/kind:node-v1.21.14
+  image: seanly/kind:node-v1.26.6
   extraMounts:
   - hostPath: /tmp/hostpath-provisioner
     containerPath: /tmp/hostpath-provisioner
@@ -41,7 +41,7 @@ nodes:
         node-labels: "my-label2=true"
 
 - role: worker
-  image: seanly/kind:node-v1.21.14
+  image: seanly/kind:node-v1.26.6
   extraMounts:
   - hostPath: /tmp/hostpath-provisioner
     containerPath: /tmp/hostpath-provisioner
@@ -53,7 +53,7 @@ nodes:
         node-labels: "my-label2=true"
 
 - role: worker
-  image: seanly/kind:node-v1.21.14
+  image: seanly/kind:node-v1.26.6
   extraMounts:
   - hostPath: /tmp/hostpath-provisioner
     containerPath: /tmp/hostpath-provisioner

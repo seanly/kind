@@ -16,3 +16,8 @@ services:
       context: ./
       target: v1.22.17
     image: seanly/kind:node-v1.22.17
+  hostpath-provisioner:
+    build: 
+      context: ./
+      target: hostpath-provisioner
+    image: seanly/kind:hostpath-provisioner
