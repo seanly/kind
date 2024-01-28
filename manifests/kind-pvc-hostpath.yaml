@@ -87,7 +87,7 @@ spec:
     spec:
       containers:
         - name: hostpath-provisioner
-          image: mauilion/hostpath-provisioner:dev
+          image:  seanly/kind:hostpath-provisioner
           imagePullPolicy: "IfNotPresent"
           env:
             - name: NODE_NAME
