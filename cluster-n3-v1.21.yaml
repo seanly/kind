@@ -3,9 +3,12 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   kubeProxyMode: "ipvs"
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+
 nodes:
 - role: control-plane
-  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.21.1
+  image: seanly/kind:node-v1.21.14
   extraMounts:
   - hostPath: ./manifests/kind-pvc-hostpath.yaml
     containerPath: /kind/manifests/default-storage.yaml
@@ -24,8 +27,33 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
+
 - role: worker
-  image: registry.cn-hangzhou.aliyuncs.com/k8ops/kindest-node:v1.21.1
+  image: seanly/kind:node-v1.21.14
+  extraMounts:
+  - hostPath: /tmp/hostpath-provisioner
+    containerPath: /tmp/hostpath-provisioner
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "my-label2=true"
+
+- role: worker
+  image: seanly/kind:node-v1.21.14
+  extraMounts:
+  - hostPath: /tmp/hostpath-provisioner
+    containerPath: /tmp/hostpath-provisioner
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "my-label2=true"
+
+- role: worker
+  image: seanly/kind:node-v1.21.14
   extraMounts:
   - hostPath: /tmp/hostpath-provisioner
     containerPath: /tmp/hostpath-provisioner

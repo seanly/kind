@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  kind-v1.26:
+    build: 
+      context: ./
+      target: v1.26.6
+    image: seanly/kind:node-v1.26.6
+  kind-v1.24:
+    build: 
+      context: ./
+      target: v1.24.15
+    image: seanly/kind:node-v1.24.15
+  kind-v1.22:
+    build: 
+      context: ./
+      target: v1.22.17
+    image: seanly/kind:node-v1.22.17
