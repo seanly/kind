@@ -6,12 +6,14 @@ FROM kindest/node:v1.23.17 as v1.23.17
 FROM kindest/node:v1.22.17 as v1.22.17
 FROM kindest/node:v1.21.14 as v1.21.14
 
-# Build hostpath-provisioner
-FROM golang:1.20.5 as hostpath-provisioner-builder
+# Build local-path-provisioner
+FROM golang:1.21 as lpp-builder
 
-RUN git clone -b v9.0.3 --depth 1 https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner /build
+ARG LPP_VERSION=v0.0.26
 
-WORKDIR /build/examples/hostpath-provisioner
+RUN git clone -b ${LPP_VERSION} --depth 1 https://github.com/seanly/local-path-provisioner /build
+
+WORKDIR /build/
 
 RUN go mod tidy
 
@@ -23,19 +25,19 @@ RUN set -eux \
 		arm64) \
             CGO_ENABLED=0 GOARCH=${ARCH} go build \
                 -a -ldflags '-extldflags "-static"' \
-                -o /hostpath-provisioner .;; \
+                -o local-path-provisioner .;; \
 		amd64) \
             CGO_ENABLED=0 GOARCH=${ARCH} go build \
                 -a -ldflags '-extldflags "-static"' \
-                -o /hostpath-provisioner .;; \
+                -o local-path-provisioner .;; \
 		*) echo >&2 "error: unsupported architecture: '$arch'"; exit 1 ;; \
 	esac; 
 
-FROM alpine as hostpath-provisioner
+FROM alpine as local-path-provisioner
 
 #RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
 RUN apk update && apk add --update --no-cache curl bash
+RUN apk upgrade --no-cache busybox zlib
 
-COPY --from=hostpath-provisioner-builder /hostpath-provisioner /hostpath-provisioner
-
-CMD ["/hostpath-provisioner"]
+COPY --from=lpp-builder /build/local-path-provisioner /usr/bin/local-path-provisioner
+CMD ["local-path-provisioner"]
